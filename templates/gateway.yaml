@@ -1,0 +1,27 @@
+{{- $fullName := include "outline-artifact.fullname" . -}}
+{{- if .Values.istio.enabled }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ $fullName }}
+  labels: {{- include "outline-artifact.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- toYaml .Values.istio.selector | nindent 4 }}
+    #istio: ingressgateway # use Istio default gateway implementation
+  servers:
+    {{- range .Values.istio.servers }}
+    - port:
+        number: {{ .port.number }}
+        name: {{ .port.name }}
+        protocol: {{ .port.protocol }}
+      hosts:
+        {{- range .hosts}}
+        - "{{ . }}"
+      {{- end }}
+      {{- if .tls }}
+      tls:
+        {{- toYaml .tls | nindent 8 }}
+      {{- end }}
+  {{- end }}
+{{- end }}
