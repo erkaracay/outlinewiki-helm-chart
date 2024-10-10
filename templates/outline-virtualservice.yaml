@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: outline-virtualservice
+  # namespace: outline
+spec:
+  hosts:
+  - "outline.int.altar.sh"
+  gateways:
+  - outline-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: outline.outline.svc.cluster.local
+        port:
+          number: 3000
