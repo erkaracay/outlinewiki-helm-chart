@@ -1,67 +1,36 @@
-# Default values for outline-artifact.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Follow the comments to fill the values
 
 replicaCount: 1
 
 image:
   repository: outlinewiki/outline
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
   tag: "0.72.0"
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
   automount: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
-
-podAnnotations: {}
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: ClusterIP
-  containerPort: 80
+  containerPort: 3000
   port: 80
 
-ingress:
+ingress: # change to true and modify if you don't use istio
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 istio:
-  enabled: false
+  enabled: false #change to true if you use istio
   selector:
     istio: ingressgateway
   servers:
@@ -71,24 +40,20 @@ istio:
         protocol: HTTP
       path: "/"
       hosts:
-        - chart-example.local
+        - chart-example.local #change to your domain
       tls: {}
   auth:
     enabled: false
   ratelimit:
     enabled: false
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 2
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 1Gi
 
 livenessProbe:
   httpGet:
@@ -125,11 +90,54 @@ tolerations: []
 
 affinity: {}
 
-envs: {}
+envs:
+  - name: GOOGLE_CLIENT_ID
+    value: ""
+  - name: GOOGLE_CLIENT_SECRET
+    value: ""
+  - name: URL
+    value: "http://outline.example.com"
+  - name: SECRET_KEY
+    value: "" #generate string
+  - name: UTILS_SECRET
+    value: "" #generate string
+  - name: DATABASE_URL
+    value: "postgres://<postgres-username>:<postgres-password>@outlinewiki-postgresql:5432/outline"
+  - name: REDIS_URL
+    value: "redis://:<redis-password>@outlinewiki-redis-master:6379"
+  - name: LOG_LEVEL
+    value: "info"
+  - name: FORCE_HTTPS
+    value: "false"
+  - name: PGSSLMODE
+    value: "disable"
 
 postgresql:
-  enabled: false
+  enabled: false #change to true
+  global:
+    storageClass: "" #fill
+    postgresql:
+      auth:
+        enablePostgresUser: true
+        username: "outline"
+        database: "outline"
+        password: "" #generate string
+        postgresPassword: "" #generate string
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "" #fill
+      size: 10Gi
 
 redis:
-  enabled: false
-
+  enabled: false #change to true
+  global:
+    storageClass: "" #fill
+    redis:
+      password: "" #generate string
+  persistence:
+    enabled: true
+    storageClass: "" #fill
+    size: 10Gi
+  replica:
+    replicaCount: 1
